@@ -1,0 +1,38 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: integration_hub
+      POSTGRES_USER: hub
+      POSTGRES_PASSWORD: hub
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hub -d integration_hub"]
+      interval: 3s
+      retries: 20
+
+  mock-erp:
+    build: { context: ., dockerfile: src/IntegrationHub.MockErp/Dockerfile }
+    environment:
+      MockErp__FailureRate: "0.1"
+    ports: ["5080:8080"]
+
+  api:
+    build: { context: ., dockerfile: src/IntegrationHub.Api/Dockerfile }
+    depends_on:
+      postgres: { condition: service_healthy }
+      mock-erp: { condition: service_started }
+    environment:
+      ConnectionStrings__Hub: "Host=postgres;Port=5432;Database=integration_hub;Username=hub;Password=hub"
+      MockErp__BaseUrl: "http://mock-erp:8080"
+      Proxy__ApiKey: "${PROXY_API_KEY:-troque-esta-chave}"
+    ports: ["5000:8080"]
+
+  web:
+    build: { context: web }
+    depends_on: [api]
+    ports: ["8080:80"]
+
+volumes:
+  pgdata:

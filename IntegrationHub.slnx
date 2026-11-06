@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/IntegrationHub.Api/IntegrationHub.Api.csproj" />
+    <Project Path="src/IntegrationHub.MockErp/IntegrationHub.MockErp.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/IntegrationHub.Tests/IntegrationHub.Tests.csproj" />
+  </Folder>
+</Solution>
